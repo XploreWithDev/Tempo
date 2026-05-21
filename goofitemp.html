@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GOOFI CHESS CUP 2026 | 64 Society</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'matte-black': '#050505',
+                        'neon-green': '#39FF14',
+                        'dark-metal': '#121212',
+                        'glass-bg': 'rgba(18, 18, 18, 0.6)',
+                        'glass-border': 'rgba(255, 255, 255, 0.08)',
+                    },
+                    fontFamily: {
+                        'cinematic': ['Anton', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px rgba(57, 255, 20, 0.15)',
+                        'neon-strong': '0 0 30px rgba(57, 255, 20, 0.4)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                    },
+                    backgroundImage: {
+                        'radial-glow': 'radial-gradient(circle at center, rgba(57,255,20,0.15) 0%, rgba(5,5,5,0) 70%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Setup */
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hide scrollbar for cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #39FF14; }
+
+        /* Typography Extras */
+        .text-glow { text-shadow: 0 0 20px rgba(57, 255, 20, 0.4); }
+        .text-glow-white { text-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+        .letter-spacing-widest { letter-spacing: 0.2em; }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Cinematic Background Elements */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        .ambient-light {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150vw;
+            height: 150vh;
+            background: radial-gradient(circle, rgba(57, 255, 20, 0.03) 0%, rgba(5, 5, 5, 0) 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        /* Neon Button */
+        .btn-neon {
+            position: relative;
+            display: inline-block;
+            padding: 1rem 2rem;
+            color: #050505;
+            background: #39FF14;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            overflow: hidden;
+            transition: 0.3s;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.8), 0 0 60px rgba(57, 255, 20, 0.4);
+            transform: scale(1.02);
+            color: #000;
+        }
+        .btn-neon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            transition: 0.5s;
+        }
+        .btn-neon:hover::before {
+            left: 100%;
+        }
+
+        /* The King Styling */
+        .king-container {
+            filter: drop-shadow(0 0 40px rgba(57, 255, 20, 0.2));
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Language Selector specific */
+        .lang-active {
+            color: #39FF14;
+            text-shadow: 0 0 10px rgba(57,255,20,0.5);
+        }
+
+        /* Holographic Grid */
+        .holo-grid {
+            background-image: 
+                linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: center center;
+        }
+    </style>
+</head>
+<body class="antialiased font-body selection:bg-neon-green selection:text-black">
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="ambient-light"></div>
+
+    <div class="fixed top-0 left-0 w-full z-50 bg-matte-black/90 backdrop-blur-md border-b border-glass-border">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex justify-center items-center space-x-6 sm:space-x-10 overflow-x-auto whitespace-nowrap text-xs sm:text-sm font-medium tracking-widest text-gray-400">
+            <a href="#" data-lang="en" class="lang-btn lang-active transition-colors duration-300 hover:text-neon-green">ENGLISH</a>
+            <span class="w-1 h-1 rounded-full bg-glass-border"></span>
+            <a href="#" data-lang="ta" class="lang-btn transition-colors duration-300 hover:text-neon-green">தமிழ்</a>
+            <span class="w-1 h-1 rounded-full bg-glass-border"></span>
+            <a href="#" data-lang="hi" class="lang-btn transition-colors duration-300 hover:text-neon-green">हिंदी</a>
+            <span class="w-1 h-1 rounded-full bg-glass-border"></span>
+            <a href="#" data-lang="bn" class="lang-btn transition-colors duration-300 hover:text-neon-green">বাংলা</a>
+        </div>
+    </div>
+
+    <nav class="fixed top-[36px] sm:top-[40px] left-0 w-full z-40 glass-panel border-t-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <div class="font-cinematic text-2xl sm:text-3xl tracking-wider text-white">
+                        64 <span class="text-neon-green">SOCIETY</span>
+                    </div>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-sm font-semibold text-gray-300 hover:text-white hover:text-glow-white transition-all">HOME</a>
+                    <a href="#tournament" class="text-sm font-semibold text-gray-300 hover:text-white hover:text-glow-white transition-all">TOURNAMENT</a>
+                    <a href="#workshop" class="text-sm font-semibold text-gray-300 hover:text-white hover:text-glow-white transition-all">WORKSHOP</a>
+                    <a href="#rewards" class="text-sm font-semibold text-gray-300 hover:text-white hover:text-glow-white transition-all">REWARDS</a>
+                </div>
+
+                <!-- CTA Button -->
+                <div class="hidden md:block">
+                    <a href="#register" class="btn-neon text-sm px-6 py-2">ENTER ARENA</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-matte-black/95 backdrop-blur-xl absolute top-full left-0 w-full border-b border-glass-border">
+            <div class="px-4 pt-2 pb-6 space-y-4 flex flex-col items-center mt-4">
+                <a href="#home" class="block text-lg font-cinematic tracking-widest text-gray-300 hover:text-neon-green">HOME</a>
+                <a href="#tournament" class="block text-lg font-cinematic tracking-widest text-gray-300 hover:text-neon-green">TOURNAMENT</a>
+                <a href="#workshop" class="block text-lg font-cinematic tracking-widest text-gray-300 hover:text-neon-green">WORKSHOP</a>
+                <a href="#rewards" class="block text-lg font-cinematic tracking-widest text-gray-300 hover:text-neon-green">REWARDS</a>
+                <a href="#register" class="btn-neon text-sm px-8 py-3 mt-4 w-full text-center">ENTER ARENA</a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="relative min-h-screen flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        
+        <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between">
+            
+            <!-- Hero Text Content -->
+            <div class="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left reveal">
+                <div class="inline-block glass-panel px-4 py-1 rounded-full mb-6 border-neon-green/30">
+                    <span class="text-xs sm:text-sm font-semibold tracking-widest text-neon-green" data-translate="hero-label">64 SOCIETY PRESENTS</span>
+                </div>
+                
+                <h1 class="font-cinematic text-7xl sm:text-8xl md:text-9xl leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-500 text-glow-white mb-2" data-translate="hero-title">
+                    GOOFI<br>
+                    <span class="text-white">CHESS CUP</span>
+                </h1>
+                
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="h-[2px] w-12 bg-neon-green shadow-neon"></div>
+                    <span class="font-cinematic text-4xl sm:text-5xl text-neon-green text-glow">2026</span>
+                    <div class="h-[2px] w-12 bg-neon-green shadow-neon"></div>
+                </div>
+                
+                <p class="text-gray-400 text-sm sm:text-base md:text-lg max-w-md uppercase tracking-widest font-medium mb-10 leading-relaxed" data-translate="hero-sub">
+                    India's Competitive<br>
+                    <span class="text-white">Online Chess Tournament</span>
+                </p>
+                
+                <a href="#register" class="btn-neon" data-translate="cta-btn">Enter The Arena</a>
+            </div>
+
+            <div class="w-full lg:w-1/2 mt-16 lg:mt-0 flex justify-center items-center reveal delay-200 relative">
+                <!-- Ambient glow behind king -->
+                <div class="absolute w-64 h-64 bg-neon-green/20 rounded-full blur-[100px]"></div>
+                
+                <div class="king-container relative w-64 h-80 sm:w-80 sm:h-96 md:w-96 md:h-[30rem]">
+                    <!-- Stylized Black Chrome King SVG generated via code -->
+                    <svg viewBox="0 0 100 150" class="w-full h-full drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Metallic Gradient -->
+                            <linearGradient id="blackChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#333" />
+                                <stop offset="30%" stop-color="#111" />
+                                <stop offset="50%" stop-color="#000" />
+                                <stop offset="70%" stop-color="#222" />
+                                <stop offset="100%" stop-color="#050505" />
+                            </linearGradient>
+                            <!-- Neon Reflection Gradient -->
+                            <linearGradient id="neonReflect" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(57, 255, 20, 0.4)" />
+                                <stop offset="50%" stop-color="rgba(0,0,0,0)" />
+                                <stop offset="100%" stop-color="rgba(255, 255, 255, 0.2)" />
+                            </linearGradient>
+                            <!-- Drop Shadow Filter for extra depth -->
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Base Shape -->
+                        <g filter="url(#glow)">
+                            <!-- Base -->
+                            <path d="M 20 140 L 80 140 C 85 140 90 145 90 150 L 10 150 C 10 145 15 140 20 140 Z" fill="url(#blackChrome)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+                            <path d="M 25 130 L 75 130 L 80 140 L 20 140 Z" fill="url(#blackChrome)"/>
+                            <!-- Collar -->
+                            <rect x="30" y="120" width="40" height="10" rx="2" fill="url(#blackChrome)" stroke="rgba(57,255,20,0.3)" stroke-width="0.5"/>
+                            <!-- Body -->
+                            <path d="M 35 60 C 25 80 32 120 32 120 L 68 120 C 68 120 75 80 65 60 Z" fill="url(#blackChrome)"/>
+                            <!-- Upper Collar -->
+                            <rect x="35" y="55" width="30" height="5" rx="1" fill="url(#blackChrome)"/>
+                            <!-- Head Base -->
+                            <path d="M 30 40 C 30 30 70 30 70 40 L 65 55 L 35 55 Z" fill="url(#blackChrome)"/>
+                            <!-- Cross Base -->
+                            <rect x="45" y="25" width="10" height="15" fill="url(#blackChrome)"/>
+                            <!-- Cross Horizontal -->
+                            <rect x="38" y="28" width="24" height="6" fill="url(#blackChrome)"/>
+                            <!-- Cross Top -->
+                            <path d="M 45 25 L 50 15 L 55 25 Z" fill="url(#blackChrome)"/>
+                        </g>
+
+                        <!-- Highlights & Reflections overlay -->
+                        <g>
+                            <path d="M 20 140 L 80 140 C 85 140 90 145 90 150 L 10 150 C 10 145 15 140 20 140 Z" fill="url(#neonReflect)"/>
+                            <path d="M 25 130 L 75 130 L 80 140 L 20 140 Z" fill="url(#neonReflect)"/>
+                            <path d="M 35 60 C 25 80 32 120 32 120 L 68 120 C 68 120 75 80 65 60 Z" fill="url(#neonReflect)"/>
+                            <path d="M 30 40 C 30 30 70 30 70 40 L 65 55 L 35 55 Z" fill="url(#neonReflect)"/>
+                        </g>
+                        
+                        <!-- Fine Neon Edge lines -->
+                        <path d="M 35 60 C 25 80 32 120 32 120" fill="none" stroke="#39FF14" stroke-width="0.5" opacity="0.6"/>
+                        <path d="M 38 28 L 62 28" fill="none" stroke="#39FF14" stroke-width="0.5" opacity="0.8"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tournament" class="relative py-20 px-4 sm:px-6 z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 reveal">
+                <!-- Module 1 -->
+                <div class="glass-panel p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-neon-green/50 transition-colors duration-500">
+                    <span class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-medium">Date</span>
+                    <span class="text-white font-cinematic text-xl sm:text-2xl group-hover:text-neon-green transition-colors">JUNE 15</span>
+                    <span class="text-gray-500 text-xs mt-1">2026</span>
+                </div>
+                <!-- Module 2 -->
+                <div class="glass-panel p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-neon-green/50 transition-colors duration-500">
+                    <span class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-medium">Time</span>
+                    <span class="text-white font-cinematic text-xl sm:text-2xl group-hover:text-neon-green transition-colors">6:00 PM</span>
+                    <span class="text-gray-500 text-xs mt-1">IST</span>
+                </div>
+                <!-- Module 3 -->
+                <div class="glass-panel p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-neon-green/50 transition-colors duration-500">
+                    <span class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-medium">Platform</span>
+                    <span class="text-white font-cinematic text-xl sm:text-2xl group-hover:text-neon-green transition-colors">CHESS.COM</span>
+                    <span class="text-gray-500 text-xs mt-1">Online</span>
+                </div>
+                <!-- Module 4 -->
+                <div class="glass-panel p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-neon-green/50 transition-colors duration-500">
+                    <span class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-medium">Format</span>
+                    <span class="text-white font-cinematic text-xl sm:text-2xl group-hover:text-neon-green transition-colors">7 ROUNDS</span>
+                    <span class="text-gray-500 text-xs mt-1">Matches</span>
+                </div>
+                <!-- Module 5 -->
+                <div class="glass-panel p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-neon-green/50 transition-colors duration-500">
+                    <span class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-medium">Time Control</span>
+                    <span class="text-white font-cinematic text-xl sm:text-2xl group-hover:text-neon-green transition-colors">5 + 0</span>
+                    <span class="text-gray-500 text-xs mt-1">Blitz</span>
+                </div>
+                <!-- Module 6 -->
+                <div class="glass-panel p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-neon-green/50 transition-colors duration-500">
+                    <span class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-medium">System</span>
+                    <span class="text-white font-cinematic text-xl sm:text-2xl group-hover:text-neon-green transition-colors">SWISS</span>
+                    <span class="text-gray-500 text-xs mt-1">Pairing</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="prizes" class="relative py-20 px-4 sm:px-6 z-10 bg-gradient-to-b from-transparent via-[#0a0a0a] to-transparent">
+        <div class="max-w-5xl mx-auto text-center reveal">
+            <span class="text-neon-green font-mono text-sm tracking-widest mb-2 block" data-translate="prizes-label">GLORY & REWARDS</span>
+            <h2 class="font-cinematic text-4xl sm:text-5xl md:text-6xl text-white mb-12" data-translate="prizes-title">
+                CHAMPIONSHIP <span class="text-gray-500">PRIZES</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                <!-- 2nd Place -->
+                <div class="glass-panel p-6 rounded-2xl border-t border-gray-600 order-2 md:order-1 md:mb-8 hover:border-neon-green/50 transition-all duration-300">
+                    <div class="text-gray-400 font-cinematic text-2xl mb-2">2ND PLACE</div>
+                    <div class="text-white font-cinematic text-4xl mb-4 text-glow-white">₹15,000</div>
+                    <p class="text-sm text-gray-500">Silver Medal + E-Certificate<br>1-on-1 Mentorship Session</p>
+                </div>
+                
+                <!-- 1st Place -->
+                <div class="glass-panel p-8 rounded-2xl border border-neon-green/50 shadow-neon-strong order-1 md:order-2 relative transform md:-translate-y-4 hover:scale-105 transition-transform duration-300">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-neon-green text-black font-bold px-4 py-1 rounded-full text-xs tracking-widest">CHAMPION</div>
+                    <div class="text-neon-green font-cinematic text-3xl mb-2 text-glow">1ST PLACE</div>
+                    <div class="text-white font-cinematic text-6xl mb-4 text-glow-white">₹25,000</div>
+                    <p class="text-sm text-gray-400">Exclusive Goofi Trophy<br>Gold E-Certificate<br>Hall of Fame Entry</p>
+                </div>
+                
+                <!-- 3rd Place -->
+                <div class="glass-panel p-6 rounded-2xl border-t border-gray-600 order-3 md:mb-8 hover:border-neon-green/50 transition-all duration-300">
+                    <div class="text-gray-400 font-cinematic text-2xl mb-2">3RD PLACE</div>
+                    <div class="text-white font-cinematic text-4xl mb-4 text-glow-white">₹10,000</div>
+                    <p class="text-sm text-gray-500">Bronze Medal + E-Certificate<br>Premium Chess Merch</p>
+                </div>
+            </div>
+            
+            <p class="text-gray-500 text-xs mt-10 uppercase tracking-widest">* Special category prizes for Top Under-18, Top Female, and Best Upset.</p>
+        </div>
+    </section>
+
+    <section class="relative py-24 px-4 sm:px-6 z-10 bg-gradient-to-b from-transparent via-[#0a0a0a] to-transparent">
+        <div class="max-w-4xl mx-auto text-center reveal">
+            <h2 class="font-cinematic text-4xl sm:text-5xl md:text-6xl text-white mb-8 tracking-wide">
+                THIS IS MORE THAN <br class="hidden sm:block"><span class="text-gray-500">A TOURNAMENT</span>
+            </h2>
+            <div class="h-1 w-24 bg-neon-green mx-auto mb-12 shadow-neon"></div>
+            
+            <p class="text-gray-300 text-lg sm:text-xl font-light mb-12 leading-relaxed">
+                We are building an elite arena. Not just to play, but to evolve. This is where tactical precision meets high-stakes pressure.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <!-- Value Items -->
+                <div class="flex items-start space-x-4 glass-panel p-6 rounded-lg">
+                    <div class="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-neon-green shadow-neon"></div>
+                    <div>
+                        <h3 class="font-cinematic text-xl tracking-wider text-white mb-2">Real Competitive Exposure</h3>
+                        <p class="text-gray-400 text-sm">Face off against verified, serious opponents in a zero-tolerance fair play environment.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4 glass-panel p-6 rounded-lg">
+                    <div class="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-neon-green shadow-neon"></div>
+                    <div>
+                        <h3 class="font-cinematic text-xl tracking-wider text-white mb-2">Tournament-Level Decision Making</h3>
+                        <p class="text-gray-400 text-sm">Experience the psychological pressure of a structured Swiss system.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4 glass-panel p-6 rounded-lg">
+                    <div class="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-neon-green shadow-neon"></div>
+                    <div>
+                        <h3 class="font-cinematic text-xl tracking-wider text-white mb-2">Tactical Growth Under Pressure</h3>
+                        <p class="text-gray-400 text-sm">Learn to manage the clock and your nerves in intense 5+0 blitz combat.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4 glass-panel p-6 rounded-lg">
+                    <div class="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-neon-green shadow-neon"></div>
+                    <div>
+                        <h3 class="font-cinematic text-xl tracking-wider text-white mb-2">Recognition & Status</h3>
+                        <p class="text-gray-400 text-sm">Build your competitive identity within the exclusive 64 Society community.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="rewards" class="relative py-24 px-4 sm:px-6 z-10">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 reveal">
+                <span class="text-neon-green font-semibold tracking-widest text-sm uppercase mb-4 block">Premium Entry</span>
+                <h2 class="font-cinematic text-4xl sm:text-5xl md:text-6xl text-white mb-4">
+                    YOUR <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-green to-white">₹199</span> ACCESS PASS UNLOCKS
+                </h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Gain entry into the ecosystem. The pass is your ticket to the tournament, the preparation, and the aftermath.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal delay-100">
+                <!-- Feature Card 1 -->
+                <div class="glass-panel p-8 rounded-2xl border-t border-glass-border hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent group-hover:via-neon-green transition-colors"></div>
+                    <div class="w-12 h-12 rounded-full bg-dark-metal border border-gray-700 flex items-center justify-center mb-6 group-hover:border-neon-green transition-colors">
+                        <svg class="w-6 h-6 text-gray-300 group-hover:text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-cinematic text-xl mb-3 tracking-wide">Tournament Access</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Confirmed spot in the Goofi Chess Cup 2026 Swiss bracket.</p>
+                </div>
+                
+                <!-- Feature Card 2 -->
+                <div class="glass-panel p-8 rounded-2xl border-t border-glass-border hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent group-hover:via-neon-green transition-colors"></div>
+                    <div class="w-12 h-12 rounded-full bg-dark-metal border border-gray-700 flex items-center justify-center mb-6 group-hover:border-neon-green transition-colors">
+                        <svg class="w-6 h-6 text-gray-300 group-hover:text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <h3 class="text-white font-cinematic text-xl mb-3 tracking-wide">Preparation Resources</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Exclusive Tactical E-Book Collection and setup guides.</p>
+                </div>
+
+                <!-- Feature Card 3 -->
+                <div class="glass-panel p-8 rounded-2xl border-t border-glass-border hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent group-hover:via-neon-green transition-colors"></div>
+                    <div class="w-12 h-12 rounded-full bg-dark-metal border border-gray-700 flex items-center justify-center mb-6 group-hover:border-neon-green transition-colors">
+                        <svg class="w-6 h-6 text-gray-300 group-hover:text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-cinematic text-xl mb-3 tracking-wide">Private Community</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Access to the inner circle Discord for networking and sparring.</p>
+                </div>
+
+                <!-- Feature Card 4 -->
+                <div class="glass-panel p-8 rounded-2xl border-t border-glass-border hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent group-hover:via-neon-green transition-colors"></div>
+                    <div class="w-12 h-12 rounded-full bg-dark-metal border border-gray-700 flex items-center justify-center mb-6 group-hover:border-neon-green transition-colors">
+                        <svg class="w-6 h-6 text-gray-300 group-hover:text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-cinematic text-xl mb-3 tracking-wide">Post-Match Analysis</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Breakdown of the Top 10 games from the tournament.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="workshop" class="relative py-24 px-4 sm:px-6 z-10 bg-matte-black holo-grid border-y border-neon-green/10">
+        <div class="absolute inset-0 bg-gradient-to-b from-matte-black via-transparent to-matte-black pointer-events-none"></div>
+        
+        <div class="relative max-w-5xl mx-auto flex flex-col lg:flex-row items-center reveal">
+            <!-- Content -->
+            <div class="w-full lg:w-1/2 text-center lg:text-left mb-12 lg:mb-0">
+                <div class="inline-block bg-neon-green/10 border border-neon-green/50 px-3 py-1 rounded-full mb-4">
+                    <span class="text-neon-green font-bold text-xs tracking-widest uppercase" data-translate="workshop-tag">100% Free with ₹199 Pass</span>
+                </div>
+                <h2 class="font-cinematic text-4xl sm:text-5xl text-white mb-6" data-translate="workshop-title">
+                    PRE-TOURNAMENT<br>
+                    <span class="text-gray-500">TRAINING WORKSHOP</span>
+                </h2>
+                <p class="text-gray-400 mb-8 max-w-md mx-auto lg:mx-0 text-sm sm:text-base" data-translate="workshop-desc">Easily understand the mechanics of fast chess. We will teach you exactly how to survive, set traps, and win under pressure before you step into the actual tournament. No prior pro-experience needed.</p>
+                
+                <ul class="space-y-4 text-left inline-block lg:block">
+                    <li class="flex items-center space-x-3 text-gray-300">
+                        <svg class="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="font-mono text-sm">Blitz Tactics & Time Management</span>
+                    </li>
+                    <li class="flex items-center space-x-3 text-gray-300">
+                        <svg class="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="font-mono text-sm">Aggressive Opening Preparation</span>
+                    </li>
+                    <li class="flex items-center space-x-3 text-gray-300">
+                        <svg class="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="font-mono text-sm">Rapid Calculation Techniques</span>
+                    </li>
+                    <li class="flex items-center space-x-3 text-gray-300">
+                        <svg class="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="font-mono text-sm">Building a Competitive Mindset</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Holographic Visual -->
+            <div class="w-full lg:w-1/2 flex justify-center">
+                <div class="relative w-64 h-64 sm:w-80 sm:h-80 border border-neon-green/30 rounded-lg bg-neon-green/5 flex items-center justify-center p-4 backdrop-blur-sm overflow-hidden group">
+                    <!-- Scanner Line -->
+                    <div class="absolute top-0 left-0 w-full h-[2px] bg-neon-green shadow-neon opacity-50 animate-[scan_3s_ease-in-out_infinite]"></div>
+                    
+                    <div class="grid grid-cols-8 grid-rows-8 gap-1 w-full h-full opacity-30 group-hover:opacity-60 transition-opacity duration-500">
+                        <!-- Procedurally styling a mock chessboard via inline styles for brevity -->
+                        <script>
+                            for(let i=0; i<64; i++) {
+                                let row = Math.floor(i/8);
+                                let col = i%8;
+                                let isDark = (row+col)%2 !== 0;
+                                let color = isDark ? 'bg-neon-green/20' : 'bg-transparent';
+                                document.write(`<div class="${color} border border-neon-green/10"></div>`);
+                            }
+                        </script>
+                    </div>
+                    
+                    <!-- Overlay target icon -->
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-16 h-16 border-2 border-neon-green rounded-full opacity-50 animate-pulse flex items-center justify-center">
+                            <div class="w-2 h-2 bg-neon-green rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            @keyframes scan {
+                0% { top: 0%; }
+                50% { top: 100%; }
+                100% { top: 0%; }
+            }
+        </style>
+    </section>
+
+    <section id="register" class="relative min-h-[80vh] flex items-center justify-center py-24 px-4 sm:px-6 z-10 overflow-hidden">
+        <!-- Giant silhouette background -->
+        <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+            <svg viewBox="0 0 100 150" class="w-full h-full scale-150" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 20 140 L 80 140 C 85 140 90 145 90 150 L 10 150 C 10 145 15 140 20 140 Z M 35 60 C 25 80 32 120 32 120 L 68 120 C 68 120 75 80 65 60 Z M 30 40 C 30 30 70 30 70 40 L 65 55 L 35 55 Z M 45 25 L 50 15 L 55 25 Z" fill="#ffffff"/>
+            </svg>
+        </div>
+        
+        <div class="absolute inset-0 bg-radial-glow opacity-50"></div>
+
+        <div class="relative z-10 text-center max-w-3xl mx-auto reveal delay-200">
+            <h2 class="font-cinematic text-5xl sm:text-6xl md:text-8xl text-white mb-6 text-glow-white">
+                READY TO PROVE<br>YOUR MOVES?
+            </h2>
+            <div class="inline-block glass-panel px-6 py-2 rounded-full mb-10 border-red-500/30">
+                <span class="text-sm sm:text-base font-semibold tracking-widest text-red-500 animate-pulse">LIMITED COMPETITIVE SLOTS AVAILABLE</span>
+            </div>
+            
+            <div>
+                <a href="#" class="btn-neon text-lg sm:text-xl px-10 py-4 sm:px-12 sm:py-5 shadow-neon-strong">
+                    ENTER THE ARENA FOR ₹199
+                </a>
+            </div>
+            <p class="text-gray-500 text-xs mt-6 uppercase tracking-wider font-mono">Secure your place in the 64 Society history.</p>
+        </div>
+    </section>
+
+    <footer class="relative z-10 border-t border-glass-border bg-[#020202] py-8 px-4 text-center">
+        <div class="max-w-7xl mx-auto flex flex-col items-center justify-center">
+            <div class="font-cinematic text-xl tracking-wider text-gray-500 mb-4">
+                64 SOCIETY
+            </div>
+            <p class="text-gray-700 text-xs uppercase tracking-widest">
+                &copy; 2026 Goofi Chess Cup. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu on link click
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+
+        // Scroll Reveal Animation via Intersection Observer
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const revealOptions = {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target); // Only animate once
+            });
+        }, revealOptions);
+
+        revealElements.forEach(el => {
+            revealOnScroll.observe(el);
+        });
+
+        // Canvas Particle System Setup
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * -0.5 - 0.1; // Float upwards mostly
+                // Variations of neon green and gray
+                this.color = Math.random() > 0.8 ? 'rgba(57, 255, 20, 0.4)' : 'rgba(255, 255, 255, 0.1)';
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Wrap around edges
+                if (this.y < 0) this.y = height;
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Initialize particles based on screen size (less on mobile)
+        const particleCount = window.innerWidth < 768 ? 40 : 100;
+        for(let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Add subtle cinematic fog gradient overlay
+            const gradient = ctx.createLinearGradient(0, height, 0, 0);
+            gradient.addColorStop(0, 'rgba(5, 5, 5, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(5, 5, 5, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            requestAnimationFrame(animateCanvas);
+        }
+
+        animateCanvas();
+
+        // Actual Language Translation Logic
+        const translations = {
+            'en': {
+                'hero-label': '64 SOCIETY PRESENTS',
+                'hero-title': 'GOOFI<br><span class="text-white">CHESS CUP</span>',
+                'hero-sub': 'India\'s Competitive<br><span class="text-white">Online Chess Tournament</span>',
+                'cta-btn': 'ENTER THE ARENA',
+                'prizes-label': 'GLORY & REWARDS',
+                'prizes-title': 'CHAMPIONSHIP <span class="text-gray-500">PRIZES</span>',
+                'workshop-tag': '100% FREE WITH ₹199 PASS',
+                'workshop-title': 'PRE-TOURNAMENT<br><span class="text-gray-500">TRAINING WORKSHOP</span>',
+                'workshop-desc': 'Easily understand the mechanics of fast chess. We will teach you exactly how to survive, set traps, and win under pressure before you step into the actual tournament. No prior pro-experience needed.'
+            },
+            'ta': {
+                'hero-label': '64 சொசைட்டி வழங்குகிறது',
+                'hero-title': 'கூஃபி<br><span class="text-white">செஸ் கோப்பை</span>',
+                'hero-sub': 'இந்தியாவின் மாபெரும்<br><span class="text-white">ஆன்லைன் செஸ் தொடர்</span>',
+                'cta-btn': 'களத்தில் நுழைய',
+                'prizes-label': 'பரிசுகள் & விருதுகள்',
+                'prizes-title': 'சாம்பியன்ஷிப் <span class="text-gray-500">பரிசுகள்</span>',
+                'workshop-tag': '₹199 பாஸுடன் 100% இலவசம்',
+                'workshop-title': 'போட்டிக்கு முந்தைய<br><span class="text-gray-500">பயிற்சி பட்டறை</span>',
+                'workshop-desc': 'வேகமான செஸ் விளையாட்டின் நுட்பங்களை எளிதாக புரிந்து கொள்ளுங்கள். உண்மையான போட்டியில் நுழைவதற்கு முன், எப்படி தப்பிப்பது, பொறிகளை அமைப்பது மற்றும் எப்படி வெற்றி பெறுவது என்பதை நாங்கள் உங்களுக்கு கற்றுத்தருவோம்.'
+            },
+            'hi': {
+                'hero-label': '64 सोसाइटी प्रस्तुत करता है',
+                'hero-title': 'गूफी<br><span class="text-white">शतरंज कप</span>',
+                'hero-sub': 'भारत का प्रतिस्पर्धी<br><span class="text-white">ऑनलाइन शतरंज टूर्नामेंट</span>',
+                'cta-btn': 'अखाड़े में प्रवेश करें',
+                'prizes-label': 'गौरव और पुरस्कार',
+                'prizes-title': 'चैम्पियनशिप <span class="text-gray-500">पुरस्कार</span>',
+                'workshop-tag': '₹199 पास के साथ 100% मुफ़्त',
+                'workshop-title': 'टूर्नामेंट से पहले<br><span class="text-gray-500">प्रशिक्षण कार्यशाला</span>',
+                'workshop-desc': 'तेज़ शतरंज के मैकेनिक्स को आसानी से समझें। असली टूर्नामेंट में कदम रखने से पहले हम आपको दबाव में बचना, जाल बिछाना और जीतना सिखाएंगे।'
+            },
+            'bn': {
+                'hero-label': '64 সোসাইটি উপস্থাপন করছে',
+                'hero-title': 'গুফি<br><span class="text-white">দাবা কাপ</span>',
+                'hero-sub': 'ভারতের প্রতিযোগিতামূলক<br><span class="text-white">অনলাইন দাবা টুর্নামেন্ট</span>',
+                'cta-btn': 'অ্যারেনায় প্রবেশ করুন',
+                'prizes-label': 'গৌরব এবং পুরস্কার',
+                'prizes-title': 'চ্যাম্পিয়নশিপ <span class="text-gray-500">পুরস্কার</span>',
+                'workshop-tag': '₹199 পাসের সাথে 100% বিনামূল্যে',
+                'workshop-title': 'টুর্নামেন্টের আগে<br><span class="text-gray-500">প্রশিক্ষণ কর্মশালা</span>',
+                'workshop-desc': 'দ্রুত দাবার কৌশলগুলি সহজেই বুঝুন। আসল টুর্নামেন্টে পা রাখার আগে কীভাবে বাঁচতে হবে, ফাঁদ পাততে হবে এবং চাপের মধ্যে জিততে হবে তা আমরা আপনাকে শেখাব।'
+            }
+        };
+
+        const langLinks = document.querySelectorAll('.lang-btn');
+        langLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                
+                // Active Class Update
+                langLinks.forEach(l => l.classList.remove('lang-active'));
+                e.target.classList.add('lang-active');
+                
+                // Execute translation swap
+                const lang = e.target.getAttribute('data-lang');
+                if(translations[lang]) {
+                    document.querySelectorAll('[data-translate]').forEach(el => {
+                        const key = el.getAttribute('data-translate');
+                        if(translations[lang][key]) {
+                            el.style.opacity = 0; // Fade out
+                            setTimeout(() => {
+                                el.innerHTML = translations[lang][key];
+                                el.style.opacity = 1; // Fade in
+                            }, 200);
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Dynamic styling for text transitions
+        document.head.insertAdjacentHTML('beforeend', '<style>[data-translate] { transition: opacity 0.2s ease-in-out; }</style>');
+    </script>
+</body>
+</html>
